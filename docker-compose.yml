@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aicte-complaint-dashboard
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/prisma/dev.db
+      - JWT_SECRET=aicte_sih26264_production_secret_key_change_me
+    volumes:
+      - sqlite_data:/app/prisma
+      - upload_data:/app/storage/uploads
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aicte-cron-worker
+    restart: unless-stopped
+    command: ["npm", "run", "worker"]
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/prisma/dev.db
+      - JWT_SECRET=aicte_sih26264_production_secret_key_change_me
+    volumes:
+      - sqlite_data:/app/prisma
+      - upload_data:/app/storage/uploads
+    depends_on:
+      - app
+
+volumes:
+  sqlite_data:
+  upload_data:
